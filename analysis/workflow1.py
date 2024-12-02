@@ -1,44 +1,31 @@
-from math import *
+import csv  # Import the CSV module for reading CSV files
 
-# read sample files
+# Function to read a CSV file and return a list of lists of floats
+def read_csv(filename):
+    with open(filename) as file:
+        reader = csv.reader(file)  # Create a CSV reader object
+        return [[float(n) for n in line] for line in reader]  # Read and convert each value to float
 
-with open('data1.csv') as file1:
-    lines1 = file1.readlines()
-    data1 = []
-    for line in lines1:
-        row = []
-        for n in line.split(','):
-            row.append(float(n.strip()))
-        data1.append(row)
+# Read data from sample CSV files
+data1 = read_csv('data1.csv')
+data2 = read_csv('data2.csv')
+weights = read_csv('weights.csv')[0]  # Read weights from the first (and only) line
 
-with open('data2.csv') as file2:
-    lines2 = file2.readlines()
-    data2 = []
-    for line in lines2:
-        row = []
-        for n in line.split(','):
-            row.append(float(n.strip()))
-        data2.append(row)
+# Initialize an empty list to store the results
+results = [
+    # For each pair of corresponding rows in data1 and data2
+    sum(weights[j] * abs(data1[i][j] - data2[i][j]) for j in range(len(weights)))
+    for i in range(len(data1))
+]
 
-with open('weights.csv') as filew:
-    linew = filew.read()
-    w = []
-    for n in linew.split(','):
-        w.append(float(n.strip()))
+# Define the critical threshold value
+CRITICAL_THRESHOLD = 5
 
-results = []
-for i in range(len(data1)):
-    s = 0
-    for j in range(len(w)):
-        d = data1[i][j] - data2[i][j]
-        s += w[j] * abs(d)
-    results.append(s)
+# Count the number of results that exceed the critical threshold
+critical_count = sum(1 for result in results if result > CRITICAL_THRESHOLD)
 
-critical = 0
-for i in range(len(results)):  # for all i
-    if results[i] > 5:
-        critical = critical + 1  # increase by 1
-if critical == 1:
-    print("criticality: 1 result above 5")
+# Print the number of critical results
+if critical_count == 1:
+    print("criticality: 1 result above", CRITICAL_THRESHOLD)
 else:
-    print("criticality:", critical, "results above 5")
+    print(f"criticality: {critical_count} results above {CRITICAL_THRESHOLD}")
